@@ -1,0 +1,66 @@
+version: '3.7'
+services:
+  # postgres数据库.
+  db:
+    image: postgres:16-alpine
+    container_name: my-db
+    restart: always
+    environment:
+      # 数据库默认密码
+      POSTGRES_PASSWORD: Admin123456!!!
+      # 数据库名
+      POSTGRES_DB: db
+      # postgres data directory
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/db/data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    ports:
+      - "35432:5432"
+
+  # Qdrant 向量数据库
+  qdrant:
+    container_name: my-qdrant
+    image: qdrant/qdrant:v1.10.1
+    restart: always
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/qdrant:/qdrant/storage
+    environment:
+      QDRANT__API_KEY: 'Admin123456!!!'
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:6333/readyz" ]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 3
+    ports:
+      - "36333:6333"
+
+  # MongoDB 数据库
+  mongo:
+    container_name: my-mongo
+    image: mongo:latest
+    restart: always
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/mongo:/data/db
+    command: --wiredTigerCacheSizeGB 8 --auth # 限制内存大小, 需要认证
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: Admin123456!!!
+    healthcheck:
+      test: [ "CMD", "mongo", "--quiet", "127.0.0.1/test", "--eval", "'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    ports:
+      - "37017:27017"
+
+
+networks:
+  default:
+    name: my-middleware

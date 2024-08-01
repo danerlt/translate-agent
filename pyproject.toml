@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "translate-agent"
+version = "0.1.0"
+description = ""
+authors = ["danerlt <danerlt001@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.111.1"
+llama-index = "^0.10.59"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
